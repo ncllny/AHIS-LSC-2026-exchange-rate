@@ -6,31 +6,27 @@
 
 <style>
 body {
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     margin: 20px;
     background: #f4f4f4;
-}
-
-h2 {
-    margin-top: 30px;
 }
 
 .station {
     background: white;
     padding: 10px;
-    margin-bottom: 10px;
+    margin: 10px 0;
     border-radius: 8px;
 }
 
 button {
     margin: 2px;
-    padding: 4px 8px;
+    padding: 5px 10px;
 }
 
 table {
-    border-collapse: collapse;
     width: 100%;
     background: white;
+    border-collapse: collapse;
     margin-top: 10px;
 }
 
@@ -38,11 +34,6 @@ td, th {
     border: 1px solid #ccc;
     padding: 8px;
     text-align: center;
-}
-
-.value-box {
-    font-size: 18px;
-    font-weight: bold;
 }
 </style>
 </head>
@@ -53,10 +44,9 @@ td, th {
 
 <div id="stations"></div>
 
-<h2>📊 Total Marble Counts</h2>
+<h2>Total Counts</h2>
 <table>
 <tr>
-<th>Colour</th>
 <th>Red</th>
 <th>Green</th>
 <th>Blue</th>
@@ -64,43 +54,41 @@ td, th {
 <th>Orange</th>
 </tr>
 <tr>
-<td>Total</td>
-<td id="tRed">0</td>
-<td id="tGreen">0</td>
-<td id="tBlue">0</td>
-<td id="tYellow">0</td>
-<td id="tOrange">0</td>
+<td id="r">0</td>
+<td id="g">0</td>
+<td id="b">0</td>
+<td id="y">0</td>
+<td id="o">0</td>
 </tr>
 </table>
 
-<h2>💰 Exchange Values (1–2–3–2–1 System)</h2>
-<div class="value-box" id="values"></div>
+<h2>Market Values</h2>
+<div id="values"></div>
 
 <script>
+
 const colours = ["red","green","blue","yellow","orange"];
-const stations = 5;
+const stationCount = 5;
 
-// initialize station data
-let data = [];
-for (let i=0;i<stations;i++){
-    data.push({red:0,green:0,blue:0,yellow:0,orange:0});
-}
+let data = Array.from({length: stationCount}, () => ({
+    red:0, green:0, blue:0, yellow:0, orange:0
+}));
 
-function renderStations(){
+function render(){
     const container = document.getElementById("stations");
     container.innerHTML = "";
 
-    data.forEach((st, i) => {
+    data.forEach((s, i) => {
         let div = document.createElement("div");
         div.className = "station";
 
-        div.innerHTML = `<h3>Game Station ${i+1}</h3>`;
+        div.innerHTML = `<h3>Station ${i+1}</h3>`;
 
         colours.forEach(c => {
             div.innerHTML += `
-                ${c.toUpperCase()}: ${st[c]}
-                <button onclick="change(${i},'${c}',1)">+</button>
-                <button onclick="change(${i},'${c}',-1)">-</button>
+                <b>${c.toUpperCase()}</b>: ${s[c]}
+                <button onclick="add(${i},'${c}',1)">+</button>
+                <button onclick="add(${i},'${c}',-1)">-</button>
                 <br>
             `;
         });
@@ -109,67 +97,58 @@ function renderStations(){
     });
 }
 
-function change(i, colour, val){
-    data[i][colour] += val;
-    if(data[i][colour] < 0) data[i][colour] = 0;
+function add(i, c, v){
+    data[i][c] += v;
+    if(data[i][c] < 0) data[i][c] = 0;
     update();
 }
 
-function getTotals(){
-    let totals = {red:0,green:0,blue:0,yellow:0,orange:0};
+function totals(){
+    let t = {red:0,green:0,blue:0,yellow:0,orange:0};
 
-    data.forEach(st => {
-        colours.forEach(c => {
-            totals[c] += st[c];
-        });
+    data.forEach(s=>{
+        for(let c in t){
+            t[c] += s[c];
+        }
     });
 
-    return totals;
+    return t;
 }
 
-function updateTable(totals){
-    document.getElementById("tRed").innerText = totals.red;
-    document.getElementById("tGreen").innerText = totals.green;
-    document.getElementById("tBlue").innerText = totals.blue;
-    document.getElementById("tYellow").innerText = totals.yellow;
-    document.getElementById("tOrange").innerText = totals.orange;
-}
-
-function calculateValues(totals){
-    let arr = Object.entries(totals);
-
-    // sort by quantity
+function marketValues(t){
+    let arr = Object.entries(t);
     arr.sort((a,b)=>a[1]-b[1]);
 
-    let values = {};
-    values[arr[0][0]] = 1;
-    values[arr[1][0]] = 2;
-    values[arr[2][0]] = 3;
-    values[arr[3][0]] = 2;
-    values[arr[4][0]] = 1;
+    let v = {};
+    v[arr[0][0]] = 1;
+    v[arr[1][0]] = 2;
+    v[arr[2][0]] = 3;
+    v[arr[3][0]] = 2;
+    v[arr[4][0]] = 1;
 
-    return values;
-}
-
-function updateValues(values){
-    document.getElementById("values").innerHTML =
-        `Red: ${values.red} pts | 
-        Green: ${values.green} pts | 
-        Blue: ${values.blue} pts | 
-        Yellow: ${values.yellow} pts | 
-        Orange: ${values.orange} pts`;
+    return v;
 }
 
 function update(){
-    let totals = getTotals();
-    updateTable(totals);
+    let t = totals();
 
-    let values = calculateValues(totals);
-    updateValues(values);
+    document.getElementById("r").innerText = t.red;
+    document.getElementById("g").innerText = t.green;
+    document.getElementById("b").innerText = t.blue;
+    document.getElementById("y").innerText = t.yellow;
+    document.getElementById("o").innerText = t.orange;
+
+    let v = marketValues(t);
+
+    document.getElementById("values").innerHTML =
+        `Red: ${v.red} | Green: ${v.green} | Blue: ${v.blue} | Yellow: ${v.yellow} | Orange: ${v.orange}`;
+
+    render(); // IMPORTANT FIX: refresh station display
 }
 
-renderStations();
+render();
 update();
+
 </script>
 
 </body>
