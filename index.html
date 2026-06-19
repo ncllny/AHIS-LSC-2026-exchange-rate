@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Marble Market Dashboard</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f4f4f4;
+}
+
+h2 {
+    margin-top: 30px;
+}
+
+.station {
+    background: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+}
+
+button {
+    margin: 2px;
+    padding: 4px 8px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+    margin-top: 10px;
+}
+
+td, th {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.value-box {
+    font-size: 18px;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎯 Marble Market Dashboard</h1>
+
+<div id="stations"></div>
+
+<h2>📊 Total Marble Counts</h2>
+<table>
+<tr>
+<th>Colour</th>
+<th>Red</th>
+<th>Green</th>
+<th>Blue</th>
+<th>Yellow</th>
+<th>Orange</th>
+</tr>
+<tr>
+<td>Total</td>
+<td id="tRed">0</td>
+<td id="tGreen">0</td>
+<td id="tBlue">0</td>
+<td id="tYellow">0</td>
+<td id="tOrange">0</td>
+</tr>
+</table>
+
+<h2>💰 Exchange Values (1–2–3–2–1 System)</h2>
+<div class="value-box" id="values"></div>
+
+<script>
+const colours = ["red","green","blue","yellow","orange"];
+const stations = 5;
+
+// initialize station data
+let data = [];
+for (let i=0;i<stations;i++){
+    data.push({red:0,green:0,blue:0,yellow:0,orange:0});
+}
+
+function renderStations(){
+    const container = document.getElementById("stations");
+    container.innerHTML = "";
+
+    data.forEach((st, i) => {
+        let div = document.createElement("div");
+        div.className = "station";
+
+        div.innerHTML = `<h3>Game Station ${i+1}</h3>`;
+
+        colours.forEach(c => {
+            div.innerHTML += `
+                ${c.toUpperCase()}: ${st[c]}
+                <button onclick="change(${i},'${c}',1)">+</button>
+                <button onclick="change(${i},'${c}',-1)">-</button>
+                <br>
+            `;
+        });
+
+        container.appendChild(div);
+    });
+}
+
+function change(i, colour, val){
+    data[i][colour] += val;
+    if(data[i][colour] < 0) data[i][colour] = 0;
+    update();
+}
+
+function getTotals(){
+    let totals = {red:0,green:0,blue:0,yellow:0,orange:0};
+
+    data.forEach(st => {
+        colours.forEach(c => {
+            totals[c] += st[c];
+        });
+    });
+
+    return totals;
+}
+
+function updateTable(totals){
+    document.getElementById("tRed").innerText = totals.red;
+    document.getElementById("tGreen").innerText = totals.green;
+    document.getElementById("tBlue").innerText = totals.blue;
+    document.getElementById("tYellow").innerText = totals.yellow;
+    document.getElementById("tOrange").innerText = totals.orange;
+}
+
+function calculateValues(totals){
+    let arr = Object.entries(totals);
+
+    // sort by quantity
+    arr.sort((a,b)=>a[1]-b[1]);
+
+    let values = {};
+    values[arr[0][0]] = 1;
+    values[arr[1][0]] = 2;
+    values[arr[2][0]] = 3;
+    values[arr[3][0]] = 2;
+    values[arr[4][0]] = 1;
+
+    return values;
+}
+
+function updateValues(values){
+    document.getElementById("values").innerHTML =
+        `Red: ${values.red} pts | 
+        Green: ${values.green} pts | 
+        Blue: ${values.blue} pts | 
+        Yellow: ${values.yellow} pts | 
+        Orange: ${values.orange} pts`;
+}
+
+function update(){
+    let totals = getTotals();
+    updateTable(totals);
+
+    let values = calculateValues(totals);
+    updateValues(values);
+}
+
+renderStations();
+update();
+</script>
+
+</body>
+</html>
