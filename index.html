@@ -274,18 +274,7 @@ function update(){
 }
 
 // ================= TEAMS =================
-function renderTeams(){
-    let html = "";
 
-    teams.forEach(t=>{
-        html += `<div class="teamBox">
-        <b>${t.name}</b><br>
-        R:${t.red} G:${t.green} B:${t.blue} Y:${t.yellow} O:${t.orange}
-        </div>`;
-    });
-
-    document.getElementById("teams").innerHTML = html;
-}
 
 // ================= LOG =================
 function renderLog(){
